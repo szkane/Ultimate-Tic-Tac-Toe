@@ -11,3 +11,11 @@ HTML5 version Ultimate Tic-Tac-Toe, Human VS AI (a Monte-Carlo Tree Search)
 Recently, while reading the book "The Great Self-Driving Force," I learned about the game Ultimate Tic-Tac-Toe (I might not have noticed it before). My child was tired of playing regular Tic-Tac-Toe, so we introduced this game. I looked at some apps online, some were free but had ads. So, I used Gemini AI to generated this game.
 
 The algorithm for playing against the computer uses a Monte-Carlo Tree Search, introduced by Xing at https://michaelxing.com/projects/.
+
+# screen shot
+
+![screen1](./screen1.png)
+
+![screen2](./screen2.png)
+
+![screen3](./screen3.png)
