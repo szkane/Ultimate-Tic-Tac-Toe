@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ultimate Tic-Tac-Toe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+      font-family: 'Press Start 2P', cursive;
+      overflow: hidden;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+      font-size: 2rem;
+      text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+      animation: fadeIn 1s ease, pulse 2s infinite alternate;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes pulse {
+      from {
+        transform: scale(1);
+      }
+
+      to {
+        transform: scale(1.06);
+      }
+    }
+
+    #gameBoard {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(100px, 140px));
+      grid-template-rows: repeat(3, minmax(100px, 140px));
+      gap: 15px;
+      margin-bottom: 25px;
+      padding: 10px;
+      border-radius: 10px;
+      background-color: #e0e0e0;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      max-width: 95vw;
+    }
+
+    .miniGrid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(30px, 46px));
+      grid-template-rows: repeat(3, minmax(30px, 46px));
+      border: 3px solid #666;
+      padding: 5px;
+      background-color: #ddd;
+      transition: all 0.3s ease;
+      border-radius: 8px;
+    }
+
+    .miniGrid.active {
+      background-color: #f5f5dc;
+      box-shadow: 0 0 20px 5px rgba(255, 255, 0, 0.8);
+      border-color: #ffd700;
+      animation: pulseActive 1s infinite alternate;
+    }
+
+    @keyframes pulseActive {
+      from {
+        transform: scale(1);
+      }
+
+      to {
+        transform: scale(1.08);
+      }
+    }
+
+    .cell {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      cursor: pointer;
+      border: 2px solid #999;
+      background-color: #eee;
+      transition: all 0.3s ease;
+      border-radius: 5px;
+      aspect-ratio: 1;
+    }
+
+    .cell:hover {
+      background-color: #ccc;
+      transform: scale(1.1);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .cell.X {
+      color: #0000FF;
+      text-shadow: 0 0 8px rgba(0, 0, 255, 0.7);
+      animation: tada 1s ease;
+    }
+
+    .cell.O {
+      color: #FF0000;
+      text-shadow: 0 0 8px rgba(255, 0, 0, 0.7);
+      animation: tada 1s ease;
+    }
+
+    @keyframes tada {
+      from {
+        transform: scale(1);
+      }
+
+      10%,
+      20% {
+        transform: scale(0.9) rotate(-3deg);
+      }
+
+      30%,
+      50%,
+      70% {
+        transform: scale(1.1) rotate(3deg);
+      }
+
+      40%,
+      60% {
+        transform: scale(1.1) rotate(-3deg);
+      }
+
+      80% {
+        transform: scale(1.05) rotate(0);
+      }
+
+      to {
+        transform: scale(1);
+      }
+    }
+
+    .winning {
+      background-color: #ffd700;
+      animation: flash 1s infinite;
+    }
+
+    @keyframes flash {
+      0% {
+        background-color: #ffd700;
+      }
+
+      50% {
+        background-color: #ffb700;
+      }
+
+      100% {
+        background-color: #ffd700;
+      }
+    }
+
+    #message {
+      font-size: 1.2rem;
+      margin-bottom: 25px;
+      color: #333;
+      min-height: 1.5em;
+      text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+      animation: fadeIn 1s ease, slideIn 1s ease;
+      text-align: center;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(-20px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    button {
+      padding: 12px 25px;
+      font-size: 1rem;
+      cursor: pointer;
+      background: linear-gradient(to bottom, #4CAF50, #388E3C);
+      border: none;
+      color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+      font-family: 'Press Start 2P', cursive;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      animation: fadeIn 1s ease, pulseButton 2s infinite alternate;
+    }
+
+    @keyframes pulseButton {
+      from {
+        transform: scale(1);
+      }
+
+      to {
+        transform: scale(1.04);
+      }
+    }
+
+    button:hover {
+      background: linear-gradient(to bottom, #66BB6A, #43A047);
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4);
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      background: linear-gradient(to bottom, #388E3C, #2E7D32);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      transform: translateY(0);
+    }
+
+    #difficultyContainer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 25px;
+      animation: fadeIn 1s ease;
+    }
+
+    #difficultyLabel {
+      font-size: 0.9rem;
+      color: #333;
+      margin-bottom: 8px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .difficulty-group {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .difficulty-button {
+      padding: 10px 20px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      background-color: #eee;
+      border: 2px solid #999;
+      border-radius: 8px;
+      color: #333;
+      font-family: 'Press Start 2P', cursive;
+      transition: all 0.2s ease;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .difficulty-button:hover {
+      background-color: #ccc;
+      border-color: #666;
+      transform: scale(1.05);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .difficulty-button.selected {
+      background-color: #4CAF50;
+      color: white;
+      border-color: #388E3C;
+      box-shadow: 0 3px 7px rgba(0, 0, 0, 0.3);
+      transform: scale(1.1);
+    }
+
+    .fireworks-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    .firework {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: #ffeb3b;
+      animation: explode 1.2s ease-out forwards, flicker 0.1s infinite;
+    }
+
+    @keyframes explode {
+      0% {
+        transform: translate(var(--startX), var(--startY)) scale(0);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translate(var(--endX), var(--endY)) scale(3);
+        opacity: 0;
+      }
+    }
+
+    @keyframes flicker {
+      0% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.7;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      #message {
+        font-size: 1.2rem;
+      }
+
+      button {
+        font-size: 1rem;
+        padding: 10px 20px;
+      }
+
+      #difficultyLabel {
+        font-size: 1rem;
+      }
+
+      .difficulty-button {
+        font-size: 1rem;
+        padding: 8px 15px;
+      }
+
+      .difficulty-group {
+        gap: 10px;
+      }
+
+      #difficultyContainer {
+        gap: 10px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.1rem;
+      }
+
+      #message {
+        font-size: 1rem;
+      }
+
+      button {
+        font-size: 1rem;
+        padding: 8px 16px;
+      }
+
+      #difficultyLabel {
+        font-size: 0.8rem;
+      }
+
+      .difficulty-button {
+        font-size: 0.8rem;
+        padding: 6px 10px;
+      }
+
+      .difficulty-group {
+        gap: 8px;
+      }
+
+      #difficultyContainer {
+        gap: 8px;
+      }
+    }
+
+  </style>
+</head>
+
+<body>
+  <h1>Ultimate Tic-Tac-Toe</h1>
+  <div id="gameBoard"></div>
+  <div id="message"></div>
+  <div id="difficultyContainer">
+    <label id="difficultyLabel" for="difficulty">难度选择:</label>
+    <div class="difficulty-group">
+      <button class="difficulty-button" data-difficulty="10">简单</button>
+      <button class="difficulty-button" data-difficulty="50">中等</button>
+      <button class="difficulty-button" data-difficulty="200">困难</button>
+      <button class="difficulty-button" data-difficulty="500">大师</button>
+    </div>
+  </div>
+  <button id="resetButton">重新开始</button>
+  <div class="fireworks-container"></div>
+  <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
+  <script>
+    // 初始化游戏
+    const gameBoard = document.getElementById('gameBoard');
+    const message = document.getElementById('message');
+    const resetButton = document.getElementById('resetButton');
+    const difficultyContainer = document.getElementById('difficultyContainer');
+    const difficultyButtons = document.querySelectorAll('.difficulty-button');
+    const fireworksContainer = document.querySelector('.fireworks-container');
+
+    const SIZE = 3;
+    let board = createBoard();
+    let currentPlayer = 'X';
+    let activeMiniGrid = -1;
+    let gameOver = false;
+    let moveHistory = [];
+    let simulationTimeout = 200;
+    let selectedDifficulty = 200;
+
+    // --- Helper Functions ---
+    function createBoard() {
+      const board = [];
+      for (let i = 0; i < SIZE; i++) {
+        board[i] = [];
+        for (let j = 0; j < SIZE; j++) {
+          board[i][j] = Array(SIZE * SIZE).fill('');
+        }
+      }
+      return board;
+    }
+
+    function renderBoard() {
+      gameBoard.innerHTML = '';
+      for (let i = 0; i < SIZE; i++) {
+        for (let j = 0; j < SIZE; j++) {
+          const miniGrid = document.createElement('div');
+          miniGrid.classList.add('miniGrid');
+          if (activeMiniGrid === i * SIZE + j) {
+            miniGrid.classList.add('active');
+          }
+          for (let k = 0; k < SIZE * SIZE; k++) {
+            const cell = document.createElement('div');
+            cell.classList.add('cell');
+            if (board[i][j][k] === 'X') {
+              cell.textContent = '❌';
+              cell.classList.add('X');
+            } else if (board[i][j][k] === 'O') {
+              cell.textContent = '⭕';
+              cell.classList.add('O');
+            } else {
+              cell.textContent = '';
+            }
+
+            if (isWinningCell(board, i, j, k)) {
+              cell.classList.add('winning');
+            }
+            cell.addEventListener('click', () => handleCellClick(i, j, k));
+            miniGrid.appendChild(cell);
+          }
+          gameBoard.appendChild(miniGrid);
+        }
+      }
+    }
+
+    function checkMiniGridWin(grid) {
+      const lines = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
+      ];
+      for (const line of lines) {
+        const [a, b, c] = line;
+        if (grid[a] && grid[a] === grid[b] && grid[a] === grid[c]) {
+          return grid[a];
+        }
+      }
+      return null;
+    }
+
+    function checkGameOver(board) {
+      const miniGridWinners = [];
+      for (let i = 0; i < SIZE; i++) {
+        for (let j = 0; j < SIZE; j++) {
+          miniGridWinners.push(checkMiniGridWin(board[i][j]));
+        }
+      }
+      const lines = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
+      ];
+
+      for (const line of lines) {
+        const [a, b, c] = line;
+        if (miniGridWinners[a] && miniGridWinners[a] === miniGridWinners[b] && miniGridWinners[a] === miniGridWinners[c]) {
+          return miniGridWinners[a];
+        }
+      }
+      if (miniGridWinners.every(winner => winner)) {
+        return 'Tie';
+      }
+      return null;
+    }
+
+    function handleCellClick(i, j, k) {
+      if (gameOver) return;
+
+      if (activeMiniGrid === -1 || activeMiniGrid === i * SIZE + j) {
+        if (board[i][j][k] === '') {
+          moveHistory.push({
+            board: JSON.parse(JSON.stringify(board)),
+            currentPlayer: currentPlayer,
+            activeMiniGrid: activeMiniGrid,
+            i: i,
+            j: j,
+            k: k
+          });
+
+          board[i][j][k] = currentPlayer;
+          let nextActiveMiniGrid = k;
+
+          const miniWin = checkMiniGridWin(board[i][j]);
+          if (miniWin) {
+          }
+
+          const gameWin = checkGameOver(board);
+          if (gameWin) {
+            gameOver = true;
+            if (gameWin === 'Tie') {
+              message.textContent = `平局!`;
+            } else {
+              message.textContent = `${currentPlayer} 获胜!`;
+              triggerFireworks(currentPlayer);
+            }
+
+            renderBoard();
+            saveGameState();
+            return;
+          } else {
+            const nextRow = Math.floor(nextActiveMiniGrid / SIZE);
+            const nextCol = nextActiveMiniGrid % SIZE;
+            if (checkMiniGridWin(board[nextRow][nextCol])) {
+              activeMiniGrid = -1;
+            } else {
+              activeMiniGrid = nextActiveMiniGrid;
+            }
+          }
+
+          currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+          renderBoard();
+          saveGameState();
+
+          if (currentPlayer === 'O') {
+            setTimeout(computerMove, 500);
+          }
+        }
+      }
+    }
+
+    async function computerMove() {
+      if (gameOver) return;
+
+      const start = Date.now();
+      const timeout = simulationTimeout;
+
+      let bestMove = null;
+      let maxScore = -Infinity;
+
+      const possibleMoves = getPossibleMoves(board, activeMiniGrid);
+
+      for (const move of possibleMoves) {
+        let score = 0;
+        let simulations = 0;
+
+        while (Date.now() - start < timeout && simulations < 100) {
+          const result = simulateMove(board, move.i, move.j, move.k, currentPlayer);
+          score += result;
+          simulations++;
+        }
+
+        const averageScore = score / simulations;
+        if (averageScore > maxScore) {
+          maxScore = averageScore;
+          bestMove = move;
+        }
+      }
+
+      if (bestMove) {
+        moveHistory.push({
+          board: JSON.parse(JSON.stringify(board)),
+          currentPlayer: currentPlayer,
+          activeMiniGrid: activeMiniGrid,
+          i: bestMove.i,
+          j: bestMove.j,
+          k: bestMove.k
+        });
+
+        board[bestMove.i][bestMove.j][bestMove.k] = currentPlayer;
+        let nextActiveMiniGrid = bestMove.k;
+        const miniWin = checkMiniGridWin(board[bestMove.i][bestMove.j]);
+
+        if (miniWin) {
+        }
+
+        const gameWin = checkGameOver(board);
+        if (gameWin) {
+          gameOver = true;
+          if (gameWin === 'Tie') {
+            message.textContent = `平局!`;
+          } else {
+            message.textContent = `${currentPlayer} 获胜!`;
+            triggerFireworks(currentPlayer);
+          }
+          renderBoard();
+          saveGameState();
+          return;
+        } else {
+          const nextRow = Math.floor(nextActiveMiniGrid / SIZE);
+          const nextCol = nextActiveMiniGrid % SIZE;
+          if (checkMiniGridWin(board[nextRow][nextCol])) {
+            activeMiniGrid = -1;
+          } else {
+            activeMiniGrid = nextActiveMiniGrid;
+          }
+        }
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        renderBoard();
+        saveGameState();
+      }
+    }
+
+    function getPossibleMoves(board, activeMiniGrid) {
+      const moves = [];
+      if (activeMiniGrid === -1) {
+        for (let i = 0; i < SIZE; i++) {
+          for (let j = 0; j < SIZE; j++) {
+            if (!checkMiniGridWin(board[i][j])) {
+              for (let k = 0; k < SIZE * SIZE; k++) {
+                if (board[i][j][k] === '') {
+                  moves.push({ i, j, k });
+                }
+              }
+            }
+          }
+        }
+      } else {
+        const i = Math.floor(activeMiniGrid / SIZE);
+        const j = activeMiniGrid % SIZE;
+        if (!checkMiniGridWin(board[i][j])) {
+          for (let k = 0; k < SIZE * SIZE; k++) {
+            if (board[i][j][k] === '') {
+              moves.push({ i, j, k });
+            }
+          }
+        } else {
+          for (let i = 0; i < SIZE; i++) {
+            for (let j = 0; j < SIZE; j++) {
+              if (!checkMiniGridWin(board[i][j])) {
+                for (let k = 0; k < SIZE * SIZE; k++) {
+                  if (board[i][j][k] === '') {
+                    moves.push({ i, j, k });
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      return moves;
+    }
+
+    function simulateMove(board, i, j, k, player) {
+      const simBoard = JSON.parse(JSON.stringify(board));
+      let simPlayer = player;
+      let simActiveMiniGrid = activeMiniGrid;
+
+      simBoard[i][j][k] = simPlayer;
+      let nextActiveMiniGrid = k;
+      const miniWin = checkMiniGridWin(simBoard[i][j]);
+
+      let gameOver = false;
+      let winner = null;
+
+      if (miniWin) {
+      }
+
+      const gameWin = checkGameOver(simBoard);
+      if (gameWin) {
+        gameOver = true;
+        winner = gameWin;
+      } else {
+        const nextRow = Math.floor(nextActiveMiniGrid / SIZE);
+        const nextCol = nextActiveMiniGrid % SIZE;
+        if (checkMiniGridWin(simBoard[nextRow][nextCol])) {
+          simActiveMiniGrid = -1;
+        } else {
+          simActiveMiniGrid = nextActiveMiniGrid;
+        }
+      }
+
+      simPlayer = simPlayer === 'X' ? 'O' : 'X';
+
+      while (!gameOver) {
+        const possibleMoves = getPossibleMoves(simBoard, simActiveMiniGrid);
+        if (possibleMoves.length === 0) {
+          winner = null;
+          break;
+        }
+
+        const randomMoveIndex = Math.floor(Math.random() * possibleMoves.length);
+        const { i: moveI, j: moveJ, k: moveK } = possibleMoves[randomMoveIndex];
+
+        simBoard[moveI][moveJ][moveK] = simPlayer;
+        nextActiveMiniGrid = moveK;
+        const miniWinSim = checkMiniGridWin(simBoard[moveI][moveJ]);
+        if (miniWinSim) {
+        }
+        const gameWinSim = checkGameOver(simBoard);
+        if (gameWinSim) {
+          gameOver = true;
+          winner = gameWinSim;
+          break;
+        } else {
+          const nextRowSim = Math.floor(nextActiveMiniGrid / SIZE);
+          const nextColSim = nextActiveMiniGrid % SIZE;
+          if (checkMiniGridWin(simBoard[nextRowSim][nextColSim])) {
+            simActiveMiniGrid = -1;
+          } else {
+            simActiveMiniGrid = nextActiveMiniGrid;
+          }
+        }
+
+        simPlayer = simPlayer === 'X' ? 'O' : 'X';
+      } if (winner === player) {
+        return 1;
+      } else {
+        return 0;
+      }
+    }
+
+    function isWinningCell(board, i, j, k) {
+      const grid = board[i][j];
+      const cellValue = grid[k];
+      if (!cellValue) return false;
+
+      const winPatterns = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6]
+      ];
+
+      for (const pattern of winPatterns) {
+        const [a, b, c] = pattern;
+        if (a === k || b === k || c === k) {
+          if (grid[a] === cellValue && grid[b] === cellValue && grid[c] === cellValue) {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    // --- Game State Management ---
+    function saveGameState() {
+      const gameState = {
+        board: board,
+        currentPlayer: currentPlayer,
+        activeMiniGrid: activeMiniGrid,
+        gameOver: gameOver,
+        moveHistory: moveHistory
+      };
+      Cookies.set('ultimateTicTacToe', JSON.stringify(gameState), { expires: 7 });
+    }
+
+    function loadGameState() {
+      const savedState = Cookies.get('ultimateTicTacToe');
+      if (savedState) {
+        const gameState = JSON.parse(savedState);
+        board = gameState.board;
+        currentPlayer = gameState.currentPlayer;
+        activeMiniGrid = gameState.activeMiniGrid;
+        gameOver = gameState.gameOver;
+        moveHistory = gameState.moveHistory;
+      }
+    }
+
+    // --- Event Listeners ---
+    resetButton.addEventListener('click', () => {
+      board = createBoard();
+      currentPlayer = 'X';
+      activeMiniGrid = -1;
+      gameOver = false;
+      moveHistory = [];
+      message.textContent = '';
+      renderBoard();
+      Cookies.remove('ultimateTicTacToe');
+    });
+
+    difficultyButtons.forEach(button => {
+      button.addEventListener('click', (event) => {
+        selectedDifficulty = parseInt(event.target.dataset.difficulty);
+        simulationTimeout = selectedDifficulty;
+        difficultyButtons.forEach(b => b.classList.remove('selected'));
+        event.target.classList.add('selected');
+      });
+    });
+    document.querySelector(`[data-difficulty="${selectedDifficulty}"]`).classList.add('selected');
+
+    // --- Initial Setup ---
+    loadGameState();
+    renderBoard();
+    if (currentPlayer === 'O' && !gameOver) {
+      setTimeout(computerMove, 500);
+    }
+
+    function triggerFireworks(winner) {
+      const numFireworks = 20 + Math.floor(Math.random() * 30);
+      const containerRect = fireworksContainer.getBoundingClientRect();
+      const centerX = containerRect.width / 2;
+      const centerY = containerRect.height / 2;
+
+      for (let i = 0; i < numFireworks; i++) {
+        const firework = document.createElement('div');
+        firework.classList.add('firework');
+        const startX = centerX + (Math.random() - 0.5) * containerRect.width / 2;
+        const startY = centerY + (Math.random() - 0.5) * containerRect.height / 2;
+        const endX = centerX + (Math.random() - 0.5) * containerRect.width;
+        const endY = containerRect.height * Math.random() / 2;
+
+        firework.style.setProperty('--startX', `${startX}px`);
+        firework.style.setProperty('--startY', `${startY}px`);
+        firework.style.setProperty('--endX', `${endX}px`);
+        firework.style.setProperty('--endY', `${endY}px`);
+
+        const color = ['#ffeb3b', '#f44336', '#2196f3', '#4caf50', '#9c27b0'][i % 5];
+        firework.style.backgroundColor = color;
+
+        const size = 12 + Math.random() * 12;
+        firework.style.width = `${size}px`;
+        firework.style.height = `${size}px`;
+
+        const duration = 1 + Math.random() * 0.7;
+        firework.style.animationDuration = `${duration}s`;
+
+        fireworksContainer.appendChild(firework);
+
+        firework.addEventListener('animationend', () => {
+          firework.remove();
+        });
+      }
+      const winnerSymbol = document.createElement('div');
+      winnerSymbol.style.position = 'absolute';
+      winnerSymbol.style.top = '50%';
+      winnerSymbol.style.left = '50%';
+      winnerSymbol.style.transform = 'translate(-50%, -50%)';
+      winnerSymbol.style.fontSize = '7rem';
+      winnerSymbol.style.color = winner === 'X' ? '#0000FF' : '#FF0000';
+      winnerSymbol.textContent = winner === 'X' ? '❌' : '⭕';
+      winnerSymbol.style.zIndex = '1001';
+      winnerSymbol.style.animation = 'pulse 2s infinite';
+      fireworksContainer.appendChild(winnerSymbol);
+
+      setTimeout(() => {
+        winnerSymbol.remove();
+      }, 2000);
+    }
+  </script>
+</body>
+
+</html>
