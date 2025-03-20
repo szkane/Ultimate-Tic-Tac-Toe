@@ -395,6 +395,31 @@
       }
     }
 
+
+
+    .cell.last-move {
+      box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.8);
+      animation: highlight 2s ease;
+      z-index: 10;
+    }
+
+    @keyframes highlight {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 0px rgba(255, 215, 0, 0);
+      }
+
+      50% {
+        transform: scale(1.2);
+        box-shadow: 0 0 20px 8px rgba(255, 215, 0, 1);
+      }
+
+      100% {
+        transform: scale(1);
+        box-shadow: 0 0 15px 5px rgba(255, 215, 0, 0.8);
+      }
+    }
+
   </style>
 </head>
 
@@ -444,6 +469,9 @@
       return board;
     }
 
+    // 添加一个变量来跟踪最后一步棋的位置
+    let lastMove = null;
+
     function renderBoard() {
       gameBoard.innerHTML = '';
       for (let i = 0; i < SIZE; i++) {
@@ -464,6 +492,11 @@
               cell.classList.add('O');
             } else {
               cell.textContent = '';
+            }
+
+            // 高亮显示最后一步棋
+            if (lastMove && lastMove.i === i && lastMove.j === j && lastMove.k === k) {
+              cell.classList.add('last-move');
             }
 
             if (isWinningCell(board, i, j, k)) {
@@ -531,6 +564,9 @@
             k: k
           });
 
+          // 记录玩家的最后一步棋
+          lastMove = { i, j, k };
+
           board[i][j][k] = currentPlayer;
           let nextActiveMiniGrid = k;
 
@@ -566,7 +602,10 @@
           saveGameState();
 
           if (currentPlayer === 'O') {
-            setTimeout(computerMove, 500);
+            // 显示"电脑思考中"的消息
+            message.textContent = "电脑思考中...";
+            // 延长电脑思考时间，让用户有足够时间看清楚
+            setTimeout(computerMove, 1000);
           }
         }
       }
@@ -601,6 +640,12 @@
       }
 
       if (bestMove) {
+        // 先显示电脑将要下棋的位置
+        message.textContent = "电脑正在下棋...";
+
+        // 记录电脑的最后一步棋
+        lastMove = { i: bestMove.i, j: bestMove.j, k: bestMove.k };
+
         moveHistory.push({
           board: JSON.parse(JSON.stringify(board)),
           currentPlayer: currentPlayer,
@@ -640,6 +685,10 @@
         }
         currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
         renderBoard();
+        // 清除消息
+        setTimeout(() => {
+          message.textContent = currentPlayer === 'X' ? "轮到你下棋了" : "";
+        }, 500);
         saveGameState();
         // 添加延时和高亮显示
         await new Promise(resolve => setTimeout(resolve, 500)); // 延时 500 毫秒
@@ -649,7 +698,7 @@
 
         setTimeout(() => {
           cellElement.classList.remove('highlight'); // 移除高亮类
-        }, 500); // 1秒后移除高亮
+        }, 1000); // 1秒后移除高亮
       }
     }
 
