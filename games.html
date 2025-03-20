@@ -478,6 +478,24 @@
         for (let j = 0; j < SIZE; j++) {
           const miniGrid = document.createElement('div');
           miniGrid.classList.add('miniGrid');
+
+          if (activeMiniGrid === -1) {
+            // 如果这个小棋盘没有分出胜负，添加active类
+            if (!checkMiniGridWin(board[i][j])) {
+              miniGrid.classList.add('active');
+            }
+          } else if (activeMiniGrid === i * SIZE + j) {
+            // 当前活动的小棋盘
+            miniGrid.classList.add('active');
+          }
+
+          for (let k = 0; k < SIZE * SIZE; k++) {
+            const cell = document.createElement('div');
+            cell.classList.add('cell');
+          }
+
+
+
           if (activeMiniGrid === i * SIZE + j) {
             miniGrid.classList.add('active');
           }
