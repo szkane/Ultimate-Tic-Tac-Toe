@@ -471,6 +471,7 @@
 
     // 添加一个变量来跟踪最后一步棋的位置
     let lastMove = null;
+    let miniGridWinners = Array(SIZE * SIZE).fill(null); // 新增数组来跟踪每个小九宫格的胜者
 
     function renderBoard() {
       gameBoard.innerHTML = '';
@@ -479,13 +480,13 @@
           const miniGrid = document.createElement('div');
           miniGrid.classList.add('miniGrid');
 
+          const miniGridIndex = i * SIZE + j;
           if (activeMiniGrid === -1) {
-            // 如果这个小棋盘没有分出胜负，添加active类
-            if (!checkMiniGridWin(board[i][j])) {
+            // 只有当小九宫格没有胜者时，才添加active类
+            if (miniGridWinners[miniGridIndex] === null) {
               miniGrid.classList.add('active');
             }
-          } else if (activeMiniGrid === i * SIZE + j) {
-            // 当前活动的小棋盘
+          } else if (activeMiniGrid === miniGridIndex) {
             miniGrid.classList.add('active');
           }
 
@@ -530,9 +531,14 @@
 
     function checkMiniGridWin(grid) {
       const lines = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8],
-        [0, 3, 6], [1, 4, 7], [2, 5, 8],
-        [0, 4, 8], [2, 4, 6]
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
       ];
       for (const line of lines) {
         const [a, b, c] = line;
@@ -551,27 +557,57 @@
         }
       }
       const lines = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8],
-        [0, 3, 6], [1, 4, 7], [2, 5, 8],
-        [0, 4, 8], [2, 4, 6]
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
       ];
 
       for (const line of lines) {
         const [a, b, c] = line;
-        if (miniGridWinners[a] && miniGridWinners[a] === miniGridWinners[b] && miniGridWinners[a] === miniGridWinners[c]) {
+        if (
+          miniGridWinners[a] &&
+          miniGridWinners[a] === miniGridWinners[b] &&
+          miniGridWinners[a] === miniGridWinners[c]
+        ) {
           return miniGridWinners[a];
         }
       }
-      if (miniGridWinners.every(winner => winner)) {
+      // 检查是否所有小格子都已经下满, 修改了这里的判断逻辑
+      let allCellsFilled = true;
+      for (let i = 0; i < SIZE; i++) {
+        for (let j = 0; j < SIZE; j++) {
+          if (miniGridWinners[i * SIZE + j] === null) { // Use the miniGridWinners array
+            for (let k = 0; k < SIZE * SIZE; k++) {
+              if (board[i][j][k] === '') {
+                allCellsFilled = false;
+                break;
+              }
+            }
+            if (!allCellsFilled) break;
+          }
+        }
+        if (!allCellsFilled) break;
+      }
+
+      // 如果所有小格子都已下满或所有小棋盘都有结果，则为平局
+      if (allCellsFilled) {
         return 'Tie';
       }
       return null;
     }
 
+
+
     function handleCellClick(i, j, k) {
       if (gameOver) return;
 
-      if (activeMiniGrid === -1 || activeMiniGrid === i * SIZE + j) {
+      const miniGridIndex = i * SIZE + j;
+      if (activeMiniGrid === -1 || activeMiniGrid === miniGridIndex) {
         if (board[i][j][k] === '') {
           moveHistory.push({
             board: JSON.parse(JSON.stringify(board)),
@@ -583,13 +619,18 @@
           });
 
           // 记录玩家的最后一步棋
-          lastMove = { i, j, k };
+          lastMove = {
+            i,
+            j,
+            k
+          };
 
           board[i][j][k] = currentPlayer;
           let nextActiveMiniGrid = k;
 
           const miniWin = checkMiniGridWin(board[i][j]);
           if (miniWin) {
+            miniGridWinners[miniGridIndex] = miniWin; // Store the winner of the mini-grid
           }
 
           const gameWin = checkGameOver(board);
@@ -662,7 +703,11 @@
         message.textContent = "电脑正在下棋...";
 
         // 记录电脑的最后一步棋
-        lastMove = { i: bestMove.i, j: bestMove.j, k: bestMove.k };
+        lastMove = {
+          i: bestMove.i,
+          j: bestMove.j,
+          k: bestMove.k
+        };
 
         moveHistory.push({
           board: JSON.parse(JSON.stringify(board)),
@@ -676,8 +721,10 @@
         board[bestMove.i][bestMove.j][bestMove.k] = currentPlayer;
         let nextActiveMiniGrid = bestMove.k;
         const miniWin = checkMiniGridWin(board[bestMove.i][bestMove.j]);
+        const miniGridIndex = bestMove.i * SIZE + bestMove.j;
 
         if (miniWin) {
+          miniGridWinners[miniGridIndex] = miniWin;
         }
 
         const gameWin = checkGameOver(board);
@@ -725,10 +772,14 @@
       if (activeMiniGrid === -1) {
         for (let i = 0; i < SIZE; i++) {
           for (let j = 0; j < SIZE; j++) {
-            if (!checkMiniGridWin(board[i][j])) {
+            if (miniGridWinners[i * SIZE + j] === null) { // Only check mini-grids without a winner
               for (let k = 0; k < SIZE * SIZE; k++) {
                 if (board[i][j][k] === '') {
-                  moves.push({ i, j, k });
+                  moves.push({
+                    i,
+                    j,
+                    k
+                  });
                 }
               }
             }
@@ -737,19 +788,28 @@
       } else {
         const i = Math.floor(activeMiniGrid / SIZE);
         const j = activeMiniGrid % SIZE;
-        if (!checkMiniGridWin(board[i][j])) {
+        if (miniGridWinners[activeMiniGrid] === null) { // 确保当前小九宫格没有胜者
           for (let k = 0; k < SIZE * SIZE; k++) {
             if (board[i][j][k] === '') {
-              moves.push({ i, j, k });
+              moves.push({
+                i,
+                j,
+                k
+              });
             }
           }
         } else {
+          // 如果当前小九宫格已经有胜者，则玩家可以选择任何没有胜者的小九宫格
           for (let i = 0; i < SIZE; i++) {
             for (let j = 0; j < SIZE; j++) {
-              if (!checkMiniGridWin(board[i][j])) {
+              if (miniGridWinners[i * SIZE + j] === null) {
                 for (let k = 0; k < SIZE * SIZE; k++) {
                   if (board[i][j][k] === '') {
-                    moves.push({ i, j, k });
+                    moves.push({
+                      i,
+                      j,
+                      k
+                    });
                   }
                 }
               }
@@ -762,17 +822,20 @@
 
     function simulateMove(board, i, j, k, player) {
       const simBoard = JSON.parse(JSON.stringify(board));
+      const simMiniGridWinners = [...miniGridWinners]; // Copy the miniGridWinners array
       let simPlayer = player;
       let simActiveMiniGrid = activeMiniGrid;
 
       simBoard[i][j][k] = simPlayer;
       let nextActiveMiniGrid = k;
       const miniWin = checkMiniGridWin(simBoard[i][j]);
+      const miniGridIndex = i * SIZE + j;
 
       let gameOver = false;
       let winner = null;
 
       if (miniWin) {
+        simMiniGridWinners[miniGridIndex] = miniWin; // Update the copy
       }
 
       const gameWin = checkGameOver(simBoard);
@@ -799,12 +862,18 @@
         }
 
         const randomMoveIndex = Math.floor(Math.random() * possibleMoves.length);
-        const { i: moveI, j: moveJ, k: moveK } = possibleMoves[randomMoveIndex];
+        const {
+          i: moveI,
+          j: moveJ,
+          k: moveK
+        } = possibleMoves[randomMoveIndex];
 
         simBoard[moveI][moveJ][moveK] = simPlayer;
         nextActiveMiniGrid = moveK;
         const miniWinSim = checkMiniGridWin(simBoard[moveI][moveJ]);
+        const moveMiniGridIndex = moveI * SIZE + moveJ;
         if (miniWinSim) {
+          simMiniGridWinners[moveMiniGridIndex] = miniWinSim; // Update within the loop
         }
         const gameWinSim = checkGameOver(simBoard);
         if (gameWinSim) {
@@ -822,7 +891,8 @@
         }
 
         simPlayer = simPlayer === 'X' ? 'O' : 'X';
-      } if (winner === player) {
+      }
+      if (winner === player) {
         return 1;
       } else {
         return 0;
@@ -835,9 +905,14 @@
       if (!cellValue) return false;
 
       const winPatterns = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8],
-        [0, 3, 6], [1, 4, 7], [2, 5, 8],
-        [0, 4, 8], [2, 4, 6]
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [0, 3, 6],
+        [1, 4, 7],
+        [2, 5, 8],
+        [0, 4, 8],
+        [2, 4, 6]
       ];
 
       for (const pattern of winPatterns) {
@@ -858,9 +933,12 @@
         currentPlayer: currentPlayer,
         activeMiniGrid: activeMiniGrid,
         gameOver: gameOver,
-        moveHistory: moveHistory
+        moveHistory: moveHistory,
+        miniGridWinners: miniGridWinners // Save this array
       };
-      Cookies.set('ultimateTicTacToe', JSON.stringify(gameState), { expires: 7 });
+      Cookies.set('ultimateTicTacToe', JSON.stringify(gameState), {
+        expires: 7
+      });
     }
 
     function loadGameState() {
@@ -872,6 +950,7 @@
         activeMiniGrid = gameState.activeMiniGrid;
         gameOver = gameState.gameOver;
         moveHistory = gameState.moveHistory;
+        miniGridWinners = gameState.miniGridWinners || Array(SIZE * SIZE).fill(null); // Load or initialize
       }
     }
 
@@ -882,7 +961,9 @@
       activeMiniGrid = -1;
       gameOver = false;
       moveHistory = [];
+      lastMove = null;
       message.textContent = '';
+      miniGridWinners = Array(SIZE * SIZE).fill(null); // Reset this array
       renderBoard();
       Cookies.remove('ultimateTicTacToe');
     });
