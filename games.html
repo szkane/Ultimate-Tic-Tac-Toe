@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ultimate Tic-Tac-Toe</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.min.js"></script>
   <style>
     body {
       display: flex;
@@ -440,6 +441,45 @@
   <div class="fireworks-container"></div>
   <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
   <script>
+    // 初始化 Tone.js
+    const moveSynth = new Tone.Synth().toDestination();
+    const winSynth = new Tone.MembraneSynth().toDestination();
+    const drawSynth = new Tone.NoiseSynth().toDestination();
+
+    // 声音播放函数
+    function playMoveSound() {
+      moveSynth.triggerAttackRelease("C4", "8n");
+    }
+    function playWinSound() {
+      // winSynth.triggerAttackRelease("A4", "1n");  // 膜片合成器
+      // 使用更复杂的和弦和音序
+      const now = Tone.now();
+      winSynth.triggerAttackRelease("C5", "8n", now);
+      winSynth.triggerAttackRelease("E5", "8n", now + 0.2);
+      winSynth.triggerAttackRelease("G5", "8n", now + 0.4);
+      winSynth.triggerAttackRelease("C6", "1n", now + 0.6);
+    }
+
+    function playDrawSound() {
+      const now = Tone.now();
+      drawSynth.triggerAttackRelease("C4", "8n", now);
+      drawSynth.triggerAttackRelease("D4", "8n", now + 0.2);
+      drawSynth.triggerAttackRelease("E4", "8n", now + 0.4);
+      drawSynth.triggerAttackRelease("F4", "1n", now + 0.6);
+    }
+
+    function resetGameSound() {
+      const now = Tone.now();
+      moveSynth.triggerAttackRelease("C4", "16n", now);
+      moveSynth.triggerAttackRelease("D4", "16n", now + 0.1);
+      moveSynth.triggerAttackRelease("E4", "16n", now + 0.2);
+      moveSynth.triggerAttackRelease("F4", "16n", now + 0.3);
+
+    }
+
+
+
+
     // 初始化游戏
     const gameBoard = document.getElementById('gameBoard');
     const message = document.getElementById('message');
@@ -637,8 +677,10 @@
           if (gameWin) {
             gameOver = true;
             if (gameWin === 'Tie') {
+              playDrawSound();
               message.textContent = `平局!`;
             } else {
+              playWinSound();
               message.textContent = `${currentPlayer} 获胜!`;
               triggerFireworks(currentPlayer);
             }
@@ -657,6 +699,7 @@
           }
 
           currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+          playMoveSound();
           renderBoard();
           saveGameState();
 
@@ -966,6 +1009,7 @@
       miniGridWinners = Array(SIZE * SIZE).fill(null); // Reset this array
       renderBoard();
       Cookies.remove('ultimateTicTacToe');
+      resetGameSound();
     });
 
     difficultyButtons.forEach(button => {
