@@ -119,6 +119,14 @@
       animation: tada 1s ease;
     }
 
+    .cell.highlight {
+      background-color: rgb(53, 223, 87);
+      /* 或者其他你喜欢的颜色 */
+      transform: scale(1.2);
+      /* 放大效果 */
+      transition: background-color 0.5s ease, transform 0.5s ease;
+    }
+
     @keyframes tada {
       from {
         transform: scale(1);
@@ -633,6 +641,15 @@
         currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
         renderBoard();
         saveGameState();
+        // 添加延时和高亮显示
+        await new Promise(resolve => setTimeout(resolve, 500)); // 延时 500 毫秒
+
+        const cellElement = gameBoard.children[bestMove.i * SIZE + bestMove.j].children[bestMove.k];
+        cellElement.classList.add('highlight'); // 添加高亮类
+
+        setTimeout(() => {
+          cellElement.classList.remove('highlight'); // 移除高亮类
+        }, 500); // 1秒后移除高亮
       }
     }
 
