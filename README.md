@@ -22,5 +22,6 @@ The algorithm for playing against the computer uses a Monte-Carlo Tree Search, i
 
 # demo
 
-[Demo here](https://kane.hxna.com/res_blog/games.html)
-[Yourware.so regen](https://grc1h35ud5.yourware.so/)
+- [Demo here](https://kane.hxna.com/res_blog/games.html)
+
+- [Yourware.so regen](https://grc1h35ud5.yourware.so/)
