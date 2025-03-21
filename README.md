@@ -19,3 +19,8 @@ The algorithm for playing against the computer uses a Monte-Carlo Tree Search, i
 ![screen2](./screen2.png)
 
 ![screen3](./screen3.png)
+
+# demo
+
+[Demo here](https://kane.hxna.com/res_blog/games.html)
+[Yourware.so regen](https://grc1h35ud5.yourware.so/)
